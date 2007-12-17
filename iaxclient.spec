@@ -27,7 +27,6 @@ BuildRequires:	portmixer-devel >= 18.1-1mdk
 BuildRequires:	wxGTK2.6-devel
 BuildRequires:	x11-server-xvfb
 BuildConflicts:	%{name}-devel
-BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 
 %description
 Although asterisk supports other IP protocols (including SIP, and
