@@ -186,22 +186,11 @@ install -m0755 simpleclient/tkphone/tkiaxphone %{buildroot}%{_bindir}/
 install -d %{buildroot}%{_miconsdir}
 install -d %{buildroot}%{_iconsdir}
 install -d %{buildroot}%{_liconsdir}
-install -d %{buildroot}%{_menudir}
 
 convert simpleclient/iaxcomm/rc/logo.xpm -geometry 48x48 %{buildroot}%{_liconsdir}/iaxcomm.png
 convert simpleclient/iaxcomm/rc/logo.xpm -geometry 32x32 %{buildroot}%{_iconsdir}/iaxcomm.png
 convert simpleclient/iaxcomm/rc/logo.xpm -geometry 16x16 %{buildroot}%{_miconsdir}/iaxcomm.png
 
-cat > %{buildroot}%{_menudir}/iaxcomm <<EOF
-?package(iaxcomm): \
-command="%{_bindir}/iaxcomm" \
-section="Office/Communications/Phone" \
-icon="iaxcomm.png" \
-needs="x11" \
-title="iaxComm" \
-longtitle="iaxComm, a portable IAX2 protocol telephony client" \
-xdg="true"
-EOF
 
 # XDG menu
 install -d %{buildroot}%{_datadir}/applications
@@ -266,5 +255,4 @@ EOF
 %{_liconsdir}/iaxcomm.png
 %{_iconsdir}/iaxcomm.png
 %{_miconsdir}/iaxcomm.png
-%{_menudir}/iaxcomm
 %{_datadir}/applications/*.desktop
