@@ -3,7 +3,7 @@
 %define	major 0
 %define libname	%mklibname iaxclient %{major}
 
-Summary:	Open Source library to implement the IAX protocol
+Summary:	Library to implement the IAX protocol
 Name:		iaxclient
 Version:	1.0
 Release:	%mkrel 0.%{snap}.3
@@ -40,7 +40,7 @@ Note: the 1.0 version does not exist yet, this source is taken
 from CVS and no versioning info could be found.
 
 %package -n	%{libname}
-Summary:	Open Source library to implement the IAX protocol
+Summary:	Library to implement the IAX protocol
 Group:          System/Libraries
 
 %description -n	%{libname}
