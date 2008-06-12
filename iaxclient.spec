@@ -206,13 +206,17 @@ Categories=X-MandrivaLinux-Internet-VideoConference;Network;Telephony;
 EOF
 
 
+%if %mdkversion < 200900
 %post -n iaxcomm
 %update_menus
 %update_desktop_database
+%endif
 
+%if %mdkversion < 200900
 %postun -n iaxcomm
 %clean_menus
 %clean_desktop_database
+%endif
 
 %if %mdkversion < 200900
 %post -n %{libname} -p /sbin/ldconfig
