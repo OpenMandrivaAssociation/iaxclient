@@ -6,7 +6,7 @@
 Summary:	Library to implement the IAX protocol
 Name:		iaxclient
 Version:	1.0
-Release:	%mkrel 0.%{snap}.3
+Release:	%mkrel 0.%{snap}.4
 License:	LGPL
 Group:		System/Libraries
 URL:            http://iaxclient.sourceforge.net/
