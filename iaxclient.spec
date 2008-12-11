@@ -16,7 +16,7 @@ Patch0:		iaxclient-1.0-20050410-headers.diff.bz2
 Patch1:		iaxclient-1.0-20060610-mdk.diff
 #Patch2:		iaxclient-1.0-20050410-progs.diff.bz2
 Patch2:		iaxclient-1.0-20060610-progs.diff
-BuildRequires:	ImageMagick
+BuildRequires:	imagemagick
 BuildRequires:	gd-devel
 BuildRequires:	gsm-devel >= 1.0.10-8mdk
 BuildRequires:	iax-devel >= 0.2.3-6mdk
