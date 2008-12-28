@@ -45,6 +45,7 @@ BuildRequires:	libwxgtk-devel
 BuildRequires:	x11-server-xvfb
 BuildRequires:	liboggz-devel
 BuildRequires:	libvidcap-devel
+BuildRequires:	libtheora-devel
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 
 %description
