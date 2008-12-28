@@ -1,21 +1,38 @@
-%define	snap 20060610
+%define	snap	0
+%define beta	3
+%define rel	1
 
-%define	major 0
-%define libname	%mklibname iaxclient %{major}
+%if %beta
+%define release		%mkrel 0.beta%{beta}.%{rel}
+%define distname	%{name}-%{version}beta%{beta}.tar.gz
+%define dirname		%{name}-%{version}beta%{beta}
+%else
+%define release		%mkrel %{rel}
+%define distname	%{name}-%{version}.tar.gz
+%define dirname		%{name}-%{version}
+%endif
+
+%define	major		1
+%define libname		%mklibname %{name} %{major}
+%define develname	%mklibname %{name} -d
 
 Summary:	Library to implement the IAX protocol
 Name:		iaxclient
-Version:	1.0
-Release:	%mkrel 0.%{snap}.4
-License:	LGPL
+Version:	2.1
+Release:	%{release}
+License:	LGPLv2+
 Group:		System/Libraries
-URL:            http://iaxclient.sourceforge.net/
-Source0:        %{name}-%{version}-%{snap}.tar.bz2
-Patch0:		iaxclient-1.0-20050410-headers.diff.bz2
-#Patch1:		iaxclient-1.0-20050410-mdk.diff.bz2
-Patch1:		iaxclient-1.0-20060610-mdk.diff
-#Patch2:		iaxclient-1.0-20050410-progs.diff.bz2
-Patch2:		iaxclient-1.0-20060610-progs.diff
+URL:		http://iaxclient.sourceforge.net/
+Source0:	http://downloads.sourceforge.net/%{name}/%{distname}
+Patch0:		iaxclient-1.0-20050410-headers.diff
+# Fix header location and linkage for ffmpeg - AdamW 2008/12
+Patch1:		iaxclient-2.1-ffmpeg.patch
+# Fix some string literal errors - AdamW 2008/12
+Patch2:		iaxclient-2.1-literal.patch
+# From upstream SVN: make tkphone build - AdamW 2008/12
+Patch3:		iaxclient-2.1-tkphone.patch
+# Make the dumb thing run - AdamW 2008/12
+Patch4:		iaxclient-2.1-tkiaxphone.patch
 BuildRequires:	imagemagick
 BuildRequires:	gd-devel
 BuildRequires:	gsm-devel >= 1.0.10-8mdk
@@ -24,9 +41,10 @@ BuildRequires:	libilbc-devel
 BuildRequires:	libspeex-devel >= 1.1.6-1mdk
 BuildRequires:	portaudio-devel >= 18.1-1mdk
 BuildRequires:	portmixer-devel >= 18.1-1mdk
-BuildRequires:	wxGTK2.6-devel
+BuildRequires:	libwxgtk-devel
 BuildRequires:	x11-server-xvfb
-BuildConflicts:	%{name}-devel
+BuildRequires:	liboggz-devel
+BuildRequires:	libvidcap-devel
 BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 
 %description
@@ -35,9 +53,6 @@ with patches, H.323), IAX's simple, lightweight nature gives it
 several advantages, particularly in that it can operate easily
 through NAT and packet firewalls, and it is easily extensible and
 simple to understand. 
-
-Note: the 1.0 version does not exist yet, this source is taken
-from CVS and no versioning info could be found.
 
 %package -n	%{libname}
 Summary:	Library to implement the IAX protocol
@@ -50,17 +65,15 @@ several advantages, particularly in that it can operate easily
 through NAT and packet firewalls, and it is easily extensible and
 simple to understand. 
 
-Note: the 1.0 version does not exist yet, this source is taken
-from CVS and no versioning info could be found.
-
-%package -n	%{libname}-devel
+%package -n	%{develname}
 Summary:	IAXClient Library development files
 Group:		Development/C
-Obsoletes:	%{name}-devel lib%{name}-devel
-Provides:	%{name}-devel lib%{name}-devel
+Obsoletes:	%{name}-devel < %{version}-%{release}
+Obsoletes:	%{mklibname iaxclient 0 -d} < %{version}-%{release}
+Provides:	%{name}-devel = %{version}-%{release}
 Requires:	%{libname} = %{version}-%{release}
 
-%description -n	%{libname}-devel
+%description -n	%{develname}
 Although asterisk supports other IP protocols (including SIP, and
 with patches, H.323), IAX's simple, lightweight nature gives it
 several advantages, particularly in that it can operate easily
@@ -69,9 +82,6 @@ simple to understand.
 
 This package contains the development library and its header
 files for the IAXClient Library.
-
-Note: the 1.0 version does not exist yet, this source is taken
-from CVS and no versioning info could be found.
 
 %package	utils
 Summary:	IAX utilities
@@ -109,102 +119,65 @@ EXPERIMENTAL
 
 %prep
 
-%setup -q -n %{name}
+%setup -q -n %{dirname}
 %patch0 -p1 -b .headers
-%patch1 -p1 -b .mdk
-%patch2 -p1 -b .progs
+%patch1 -p1 -b .ffmpeg
+%patch2 -p1 -b .literal
+%patch3 -p1 -b .tkphone
+%patch4 -p1
 
 %build
-
-%make -C lib RPM_OPT_FLAGS="%{optflags} -fPIC"
-ln -snf libiaxclient.so.%{major}.%{version} lib/libiaxclient.so.%{major}
-ln -snf libiaxclient.so.%{major}.%{version} lib/libiaxclient.so
-
-%make -C simpleclient/iax2slin RPM_OPT_FLAGS="%{optflags} -fPIC"
-%make -C simpleclient/testcall RPM_OPT_FLAGS="%{optflags} -fPIC"
-
-# these are gui's, should be broken out later on
-
-# for some reason wxcs needs X
-#XDISPLAY=$(i=2; while [ -f /tmp/.X$i-lock ]; do i=$(($i+1)); done; echo $i)
-#Xvfb :$XDISPLAY >& /dev/null &
-#export DISPLAY=:$XDISPLAY
-#DISPLAY=:$XDISPLAY %make -C simpleclient/iaxcomm RPM_OPT_FLAGS="%{optflags} -fPIC"
-#kill $(cat /tmp/.X$XDISPLAY-lock)
-
-%make -C simpleclient/iaxcomm RPM_OPT_FLAGS="%{optflags} -fPIC"
-
-%make -C simpleclient/tkphone RPM_OPT_FLAGS="%{optflags} -fPIC"
-
-# iaxphone and wx won't compile ;(
-#%make -C simpleclient/iaxphone RPM_OPT_FLAGS="%{optflags} -fPIC"
-#%make -C simpleclient/wx RPM_OPT_FLAGS="%{optflags} -fPIC"
+autoreconf
+export RPM_OPT_FLAGS="%{optflags} -fPIC"
+%configure2_5x --with-gsm-includes=%{_includedir}/gsm \
+		--with-wx-config=%{_bindir}/wx-config-ansi \
+		--enable-clients="iaxcomm stresstest testcall tkphone vtestcall"
+%make
 
 %install
 [ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
+%makeinstall_std
 
-install -d %{buildroot}%{_includedir}/iaxclient/spandsp
-install -d %{buildroot}%{_bindir}
-install -d %{buildroot}%{_libdir}
+rm -f %{buildroot}%{_bindir}/tkiaxphone
 
-# install the shared lib
-install -m0755 lib/libiaxclient.so.%{major}.%{version} %{buildroot}%{_libdir}/
-ln -snf libiaxclient.so.%{major}.%{version} %{buildroot}%{_libdir}/libiaxclient.so.%{major}
-ln -snf libiaxclient.so.%{major}.%{version} %{buildroot}%{_libdir}/libiaxclient.so
+cat > %{buildroot}%{_bindir}/tkiaxphone << EOF
+#!/bin/sh
+%{_libdir}/iaxclient/tkphone/tkiaxphone
+EOF
 
-# install the static lib
-install -m0644 lib/libiaxclient.a %{buildroot}%{_libdir}/
+ln -s %{_libdir}/iaxclient/tkphone/iaxcli %{buildroot}%{_bindir}
 
-# install the headers
-install -m0644 lib/audio_encode.h %{buildroot}%{_includedir}/iaxclient/
-install -m0644 lib/audio_file.h %{buildroot}%{_includedir}/iaxclient/
-install -m0644 lib/audio_portaudio.h %{buildroot}%{_includedir}/iaxclient/
-install -m0644 lib/codec_alaw.h %{buildroot}%{_includedir}/iaxclient/
-install -m0644 lib/codec_gsm.h %{buildroot}%{_includedir}/iaxclient/
-install -m0644 lib/codec_ilbc.h %{buildroot}%{_includedir}/iaxclient/
-install -m0644 lib/codec_speex.h %{buildroot}%{_includedir}/iaxclient/
-install -m0644 lib/codec_ulaw.h %{buildroot}%{_includedir}/iaxclient/
-install -m0644 lib/iaxclient.h %{buildroot}%{_includedir}/iaxclient/
-install -m0644 lib/iaxclient_lib.h %{buildroot}%{_includedir}/iaxclient/
-install -m0644 lib/jitterbuf.h %{buildroot}%{_includedir}/iaxclient/
-install -m0644 lib/spandsp/plc.h %{buildroot}%{_includedir}/iaxclient/spandsp/
-
-# install the binaries
-install -m0755 simpleclient/iax2slin/iax2slin %{buildroot}%{_bindir}/
-install -m0755 simpleclient/testcall/testcall %{buildroot}%{_bindir}/
-install -m0755 simpleclient/testcall/testcall-jb %{buildroot}%{_bindir}/
-
-# these are gui's, should be broken out later on
-install -m0755 simpleclient/iaxcomm/iaxcomm %{buildroot}%{_bindir}/
-install -m0755 simpleclient/tkphone/iaxcli %{buildroot}%{_bindir}/
-install -m0755 simpleclient/tkphone/monitor.ui.tcl %{buildroot}%{_bindir}/
-install -m0755 simpleclient/tkphone/phone.ui.tcl %{buildroot}%{_bindir}/
-install -m0755 simpleclient/tkphone/pref.ui.tcl %{buildroot}%{_bindir}/
-install -m0755 simpleclient/tkphone/tkiaxphone %{buildroot}%{_bindir}/
-
-# fix some menu entries and stuff...
-install -d %{buildroot}%{_miconsdir}
-install -d %{buildroot}%{_iconsdir}
-install -d %{buildroot}%{_liconsdir}
-
-convert simpleclient/iaxcomm/rc/logo.xpm -geometry 48x48 %{buildroot}%{_liconsdir}/iaxcomm.png
-convert simpleclient/iaxcomm/rc/logo.xpm -geometry 32x32 %{buildroot}%{_iconsdir}/iaxcomm.png
-convert simpleclient/iaxcomm/rc/logo.xpm -geometry 16x16 %{buildroot}%{_miconsdir}/iaxcomm.png
-
+mkdir -p %{buildroot}%{_iconsdir}/hicolor/{16x16,32x32,48x48}/apps
+convert simpleclient/iaxcomm/rc/logo.xpm -geometry 48x48 %{buildroot}%{_iconsdir}/hicolor/48x48/apps/iaxcomm.png
+convert simpleclient/iaxcomm/rc/logo.xpm -geometry 48x48 %{buildroot}%{_iconsdir}/hicolor/48x48/apps/tkiaxphone.png
+convert simpleclient/iaxcomm/rc/logo.xpm -geometry 32x32 %{buildroot}%{_iconsdir}/hicolor/32x32/apps/iaxcomm.png
+convert simpleclient/iaxcomm/rc/logo.xpm -geometry 32x32 %{buildroot}%{_iconsdir}/hicolor/32x32/apps/tkiaxphone.png
+convert simpleclient/iaxcomm/rc/logo.xpm -geometry 16x16 %{buildroot}%{_iconsdir}/hicolor/16x16/apps/iaxcomm.png
+convert simpleclient/iaxcomm/rc/logo.xpm -geometry 16x16 %{buildroot}%{_iconsdir}/hicolor/16x16/apps/tkiaxphone.png
 
 # XDG menu
 install -d %{buildroot}%{_datadir}/applications
-cat > %{buildroot}%{_datadir}/applications/mandriva-%{name}.desktop << EOF
+cat > %{buildroot}%{_datadir}/applications/mandriva-iaxcomm.desktop << EOF
 [Desktop Entry]
 Name=iaxComm
-Comment=iaxComm, a portable IAX2 protocol telephony client
+Comment=Portable IAX2 protocol telephony client
 Exec=%{_bindir}/iaxcomm
 Icon=iaxcomm
 Terminal=false
 Type=Application
-Categories=X-MandrivaLinux-Internet-VideoConference;Network;Telephony;
+Categories=Network;Telephony;
 EOF
 
+cat > %{buildroot}%{_datadir}/applications/mandriva-tkiaxphone.desktop << EOF
+[Desktop Entry]
+Name=TkIaxPhone
+Comment=Simple IAX phone client
+Exec=%{_bindir}/tkiaxphone
+Icon=iaxcomm
+Terminal=false
+Type=Application
+Categories=Network;Telephony;
+EOF
 
 %if %mdkversion < 200900
 %post -n iaxcomm
@@ -214,6 +187,18 @@ EOF
 
 %if %mdkversion < 200900
 %postun -n iaxcomm
+%clean_menus
+%clean_desktop_database
+%endif
+
+%if %mdkversion < 200900
+%post -n tkiaxphone
+%update_menus
+%update_desktop_database
+%endif
+
+%if %mdkversion < 200900
+%postun -n tkiaxphone
 %clean_menus
 %clean_desktop_database
 %endif
@@ -232,35 +217,34 @@ EOF
 %files -n %{libname}
 %defattr(-,root,root)
 %doc README
-%{_libdir}/*.so.*
+%{_libdir}/*.so.%{major}*
 
-%files -n %{libname}-devel
+%files -n %{develname}
 %defattr(-,root,root)
-%doc lib/TODO
-%{_includedir}/iaxclient
+%{_includedir}/iaxclient.h
+%{_libdir}/pkgconfig/iaxclient.pc
 %{_libdir}/*.so
-%{_libdir}/*.a
+%{_libdir}/*.*a
 
 %files utils
 %defattr(-,root,root)
-%{_bindir}/iax2slin
+%{_bindir}/stresstest
 %{_bindir}/testcall
-%{_bindir}/testcall-jb
+%{_bindir}/vtestcall
 
 %files -n tkiaxphone
 %defattr(-,root,root)
 %doc simpleclient/tkphone/License simpleclient/tkphone/README
+%{_libdir}/iaxclient
+%attr(0755,root,root) %{_bindir}/tkiaxphone
 %{_bindir}/iaxcli
-%{_bindir}/monitor.ui.tcl
-%{_bindir}/phone.ui.tcl
-%{_bindir}/pref.ui.tcl
-%{_bindir}/tkiaxphone
+%{_iconsdir}/hicolor/*/apps/tkiaxphone.png
+%{_datadir}/applications/mandriva-tkiaxphone.desktop
 
 %files -n iaxcomm
 %defattr(-,root,root)
 %doc simpleclient/iaxcomm/QUICKSTART simpleclient/iaxcomm/README
 %{_bindir}/iaxcomm
-%{_liconsdir}/iaxcomm.png
-%{_iconsdir}/iaxcomm.png
-%{_miconsdir}/iaxcomm.png
-%{_datadir}/applications/*.desktop
+%{_datadir}/iaxcomm
+%{_iconsdir}/hicolor/*/apps/iaxcomm.png
+%{_datadir}/applications/mandriva-iaxcomm.desktop
