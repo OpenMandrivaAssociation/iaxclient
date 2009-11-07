@@ -35,7 +35,6 @@ Patch3:		iaxclient-2.1-tkphone.patch
 Patch4:		iaxclient-2.1-tkiaxphone.patch
 # Fedora patches
 Patch100:	iaxclient-2.1beta3-wxGTK28.patch
-Patch101:	iaxclient-2.1beta3-tkphone-cleanups.patch
 Patch102:	iaxclient-2.1beta3-tcl-includedir.patch
 Patch103:	iaxclient-2.1beta3-tcl-libdir.patch
 Patch104:	iaxclient-2.1beta3-tcl-nodoc.patch
