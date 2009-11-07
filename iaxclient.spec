@@ -33,6 +33,15 @@ Patch2:		iaxclient-2.1-literal.patch
 Patch3:		iaxclient-2.1-tkphone.patch
 # Make the dumb thing run - AdamW 2008/12
 Patch4:		iaxclient-2.1-tkiaxphone.patch
+# Fedora patches
+Patch100:	iaxclient-2.1beta3-wxGTK28.patch
+Patch101:	iaxclient-2.1beta3-tkphone-cleanups.patch
+Patch102:	iaxclient-2.1beta3-tcl-includedir.patch
+Patch103:	iaxclient-2.1beta3-tcl-libdir.patch
+Patch104:	iaxclient-2.1beta3-tcl-nodoc.patch
+Patch105:	iaxclient-2.1beta3-theora-detection.patch
+
+
 BuildRequires:	imagemagick
 BuildRequires:	gd-devel
 BuildRequires:	gsm-devel >= 1.0.10-8mdk
@@ -127,8 +136,14 @@ EXPERIMENTAL
 %patch3 -p1 -b .tkphone
 %patch4 -p1
 
+%patch100 -p1 -b .wxGTK28
+%patch102 -p1 -b .includedir
+%patch103 -p1 -b .libdir
+%patch104 -p1 -b .nodoc
+%patch105 -p1 -b .theoradetect
+
 %build
-autoreconf
+autoreconf -fis
 export RPM_OPT_FLAGS="%{optflags} -fPIC"
 %configure2_5x --with-gsm-includes=%{_includedir}/gsm \
 		--with-wx-config=%{_bindir}/wx-config-ansi \
