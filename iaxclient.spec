@@ -1,6 +1,6 @@
 %define	snap	0
 %define beta	3
-%define rel	2
+%define rel	3
 
 %if %beta
 %define release		%mkrel 0.beta%{beta}.%{rel}
