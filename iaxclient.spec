@@ -1,6 +1,6 @@
 %define	snap	0
-%define beta	3
-%define rel	4
+%define	beta	3
+%define	rel	4
 
 %if %beta
 %define release		%mkrel 0.beta%{beta}.%{rel}
@@ -40,15 +40,14 @@ Patch103:	iaxclient-2.1beta3-tcl-libdir.patch
 Patch104:	iaxclient-2.1beta3-tcl-nodoc.patch
 Patch105:	iaxclient-2.1beta3-theora-detection.patch
 
-
 BuildRequires:	imagemagick
 BuildRequires:	gd-devel
-BuildRequires:	gsm-devel >= 1.0.10-8mdk
-BuildRequires:	iax-devel >= 0.2.3-6mdk
+BuildRequires:	gsm-devel
+BuildRequires:	iax-devel
 BuildRequires:	libilbc-devel
-BuildRequires:	libspeex-devel >= 1.1.6-1mdk
-BuildRequires:	portaudio-devel >= 18.1-1mdk
-BuildRequires:	portmixer-devel >= 18.1-1mdk
+BuildRequires:	libspeex-devel
+BuildRequires:	portaudio-devel
+BuildRequires:	portmixer-devel
 BuildRequires:	wxgtku-devel
 BuildRequires:	x11-server-xvfb
 BuildRequires:	liboggz-devel
