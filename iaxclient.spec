@@ -1,6 +1,6 @@
 %define	snap	0
 %define beta	3
-%define rel	3
+%define rel	4
 
 %if %beta
 %define release		%mkrel 0.beta%{beta}.%{rel}
@@ -49,23 +49,22 @@ BuildRequires:	libilbc-devel
 BuildRequires:	libspeex-devel >= 1.1.6-1mdk
 BuildRequires:	portaudio-devel >= 18.1-1mdk
 BuildRequires:	portmixer-devel >= 18.1-1mdk
-BuildRequires:	libwxgtk-devel
+BuildRequires:	wxgtku-devel
 BuildRequires:	x11-server-xvfb
 BuildRequires:	liboggz-devel
 BuildRequires:	libvidcap-devel
 BuildRequires:	libtheora-devel
-BuildRoot:	%{_tmppath}/%{name}-%{version}-root
 
 %description
 Although asterisk supports other IP protocols (including SIP, and
 with patches, H.323), IAX's simple, lightweight nature gives it
 several advantages, particularly in that it can operate easily
 through NAT and packet firewalls, and it is easily extensible and
-simple to understand. 
+simple to understand.
 
 %package -n	%{libname}
 Summary:	Library to implement the IAX protocol
-Group:          System/Libraries
+Group:		System/Libraries
 
 %description -n	%{libname}
 Although asterisk supports other IP protocols (including SIP, and
@@ -94,7 +93,7 @@ files for the IAXClient Library.
 
 %package	utils
 Summary:	IAX utilities
-Group:          Communications
+Group:		Communications
 
 %description	utils
 IAX utilities:
@@ -106,7 +105,7 @@ IAX utilities:
 
 %package -n	tkiaxphone
 Summary:	Simple IAX phone client
-Group:          Communications
+Group:		Communications
 Requires:	tk
 
 %description -n	tkiaxphone
@@ -116,7 +115,7 @@ EXPERIMENTAL
 
 %package -n	iaxcomm
 Summary:	IaxComm, a portable IAX2 protocol telephony client
-Group:          Communications
+Group:		Communications
 URL:		http://iaxclient.sourceforge.net/iaxcomm/
 Requires(post): desktop-file-utils
 Requires(postun): desktop-file-utils
@@ -145,7 +144,7 @@ EXPERIMENTAL
 autoreconf -fis
 export RPM_OPT_FLAGS="%{optflags} -fPIC"
 %configure2_5x --with-gsm-includes=%{_includedir}/gsm \
-		--with-wx-config=%{_bindir}/wx-config-ansi \
+		--with-wx-config=%{_bindir}/wx-config-unicode \
 		--enable-clients="iaxcomm stresstest testcall tkphone vtestcall"
 %make
 
@@ -193,38 +192,6 @@ Terminal=false
 Type=Application
 Categories=Network;Telephony;
 EOF
-
-%if %mdkversion < 200900
-%post -n iaxcomm
-%update_menus
-%update_desktop_database
-%endif
-
-%if %mdkversion < 200900
-%postun -n iaxcomm
-%clean_menus
-%clean_desktop_database
-%endif
-
-%if %mdkversion < 200900
-%post -n tkiaxphone
-%update_menus
-%update_desktop_database
-%endif
-
-%if %mdkversion < 200900
-%postun -n tkiaxphone
-%clean_menus
-%clean_desktop_database
-%endif
-
-%if %mdkversion < 200900
-%post -n %{libname} -p /sbin/ldconfig
-%endif
-
-%if %mdkversion < 200900
-%postun -n %{libname} -p /sbin/ldconfig
-%endif
 
 %clean
 [ "%{buildroot}" != "/" ] && rm -rf %{buildroot}
