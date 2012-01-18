@@ -5,11 +5,11 @@
 %if %beta
 %define release		%mkrel 0.beta%{beta}.%{rel}
 %define distname	%{name}-%{version}beta%{beta}.tar.gz
-%define dirname		%{name}-%{version}beta%{beta}
+%define fname		%{name}-%{version}beta%{beta}
 %else
 %define release		%mkrel %{rel}
 %define distname	%{name}-%{version}.tar.gz
-%define dirname		%{name}-%{version}
+%define fname		%{name}-%{version}
 %endif
 
 %define	major		1
@@ -126,7 +126,7 @@ EXPERIMENTAL
 
 %prep
 
-%setup -q -n %{dirname}
+%setup -q -n %{fname}
 %patch0 -p1 -b .headers
 %patch1 -p1 -b .ffmpeg
 %patch2 -p1 -b .literal
