@@ -1,0 +1,16 @@
+--- iaxclient-2.1beta3/simpleclient/tkphone/tkiaxphone	2008-04-07 09:05:28.000000000 -0700
++++ iaxclient-2.1beta3/simpleclient/tkphone/tkiaxphone.new	2008-12-27 22:29:51.000000000 -0800
+@@ -48,13 +48,6 @@
+    append platform(cli_cmd) .exe
+ }
+ 
+-# uname -m -s seems to be the most x-plaform on unices
+-if {$tcl_platform(platform) == "unix"} {
+-   set ext -[exec uname -s]-[exec uname -m]
+-   set platform(pref_format) ".%src"
+-   append platform(cli_cmd) $ext
+-}
+-
+ # verify sufficient tk version number (need spinbox)
+ 
+ if {[info commands spinbox] == ""} {

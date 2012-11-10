@@ -1,0 +1,12 @@
+diff -urN iaxclient-2.1beta3/lib/libiax2/src/iax2-parser.c iaxclient-2.1beta3-patched/lib/libiax2/src/iax2-parser.c
+--- iaxclient-2.1beta3/lib/libiax2/src/iax2-parser.c	2008-04-08 03:05:41.000000000 +1100
++++ iaxclient-2.1beta3-patched/lib/libiax2/src/iax2-parser.c	2012-01-18 18:59:15.935172898 +1100
+@@ -56,7 +56,7 @@
+ 
+ static void internaloutput(const char *str)
+ {
+-	printf(str);
++	printf("%s", str);
+ }
+ 
+ static void internalerror(const char *str)

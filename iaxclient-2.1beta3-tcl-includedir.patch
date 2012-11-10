@@ -1,0 +1,12 @@
+diff -up iaxclient-2.1beta3/contrib/tcl/Makefile.in.BAD iaxclient-2.1beta3/contrib/tcl/Makefile.in
+--- iaxclient-2.1beta3/contrib/tcl/Makefile.in.BAD	2008-06-10 16:11:52.000000000 -0400
++++ iaxclient-2.1beta3/contrib/tcl/Makefile.in	2008-06-10 16:12:06.000000000 -0400
+@@ -144,7 +144,7 @@ TCLSH	= $(TCLSH_ENV) $(TCLSH_PROG)
+ 
+ SHARED_BUILD	= @SHARED_BUILD@
+ 
+-INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@
++INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@ -I../../lib
+ #INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@ @TK_INCLUDES@ @TK_XINCLUDES@
+ 
+ PKG_CFLAGS	= @PKG_CFLAGS@

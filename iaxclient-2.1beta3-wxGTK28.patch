@@ -1,0 +1,674 @@
+diff -up iaxclient-2.1beta3/simpleclient/iaxphone/iaxphone.cc.BAD iaxclient-2.1beta3/simpleclient/iaxphone/iaxphone.cc
+--- iaxclient-2.1beta3/simpleclient/iaxphone/iaxphone.cc.BAD	2008-06-10 11:08:12.000000000 -0400
++++ iaxclient-2.1beta3/simpleclient/iaxphone/iaxphone.cc	2008-06-10 12:54:23.000000000 -0400
+@@ -81,7 +81,7 @@ IAXCalls::IAXCalls(wxWindow *parent, int
+ 
+     Hide();
+     for(i=0;i<nCalls;i++) {
+-        InsertItem(i,wxString::Format("%ld", i+1), 0);
++        InsertItem(i,wxString::Format(wxT("%ld"), i+1), 0);
+         SetItem(i, 2, _T("No call"));
+         item.m_itemId=i;
+         item.m_mask = 0;
+@@ -159,7 +159,7 @@ int IAXCalls::HandleStateEvent(struct ia
+         stateItem.SetBackgroundColour(*wxWHITE);
+     } else {
+         // set remote 
+-        SetItem(c.callNo, 2, c.remote );
++        SetItem(c.callNo, 2, wxString::FromAscii(c.remote) );
+ 
+         bool outgoing = c.state & IAXC_CALL_STATE_OUTGOING;
+         bool ringing = c.state & IAXC_CALL_STATE_RINGING;
+@@ -226,7 +226,7 @@ IAXFrame::IAXFrame(const wxChar *title, 
+                  : wxFrame((wxFrame *) NULL, -1, title, wxPoint(xpos, ypos),
+                    wxSize(width, height))
+ {
+-    wxConfig *config = new wxConfig("iaxPhone");
++    wxConfig *config = new wxConfig(wxT("iaxPhone"));
+     wxString str;
+     long     dummy;
+     bool     bCont;
+@@ -262,9 +262,9 @@ IAXFrame::IAXFrame(const wxChar *title, 
+     wxMenu *optionsMenu = new wxMenu();
+     optionsMenu->AppendCheckItem(ID_PTT, _T("Enable &Push to Talk\tCtrl-P"));
+     optionsMenu->AppendCheckItem(ID_SILENCE, _T("Enable &Silence Suppression\tCtrl-S"));
+-    optionsMenu->Append(ID_AUDIO,  "&Audio ...", "Show audio settings dialog");
+-    optionsMenu->Append(ID_SERVER, "&Servers ...", "Manage servers list");
+-    optionsMenu->Append(ID_SPEED,  "&Speed Dials ...", "Manage Speed Dials");
++    optionsMenu->Append(ID_AUDIO,  wxT("&Audio ..."), wxT("Show audio settings dialog"));
++    optionsMenu->Append(ID_SERVER, wxT("&Servers ..."), wxT("Manage servers list"));
++    optionsMenu->Append(ID_SPEED,  wxT("&Speed Dials ..."), wxT("Manage Speed Dials"));
+    
+     wxMenuBar *menuBar = new wxMenuBar();
+ 
+@@ -293,7 +293,7 @@ IAXFrame::IAXFrame(const wxChar *title, 
+         wxGridSizer *dialpadsizer = new wxGridSizer(3);
+         for(int i=0; i<12;i++)
+         {
+-            dialpadsizer->Add(new wxButton(aPanel, i, wxString(buttonlabels[i]),
++            dialpadsizer->Add(new wxButton(aPanel, i, wxString::FromAscii(buttonlabels[i]),
+                                            wxDefaultPosition, wxDefaultSize,
+                                            wxBU_EXACTFIT), 1, wxEXPAND|wxALL, 3);
+         }
+@@ -327,10 +327,10 @@ IAXFrame::IAXFrame(const wxChar *title, 
+     }
+ 
+     /* Speed Dial */
+-    topsizer->Add(SpeedDial = new wxComboBox(aPanel, ID_SPEEDDIAL, "", 
++    topsizer->Add(SpeedDial = new wxComboBox(aPanel, ID_SPEEDDIAL, wxT(""), 
+                                       wxDefaultPosition, wxDefaultSize),0,wxEXPAND);
+ 
+-    config->SetPath("/Speed Dials");
++    config->SetPath(wxT("/Speed Dials"));
+     bCont = config->GetFirstGroup(str, dummy);
+     while ( bCont ) {
+       SpeedDial->Append(str);
+@@ -356,7 +356,7 @@ IAXFrame::IAXFrame(const wxChar *title, 
+ 
+     topsizer->Add(row3sizer,0,wxEXPAND);
+ 
+-    topsizer->Add(muteState = new wxStaticText(aPanel,-1,"PTT Disabled",
++    topsizer->Add(muteState = new wxStaticText(aPanel,-1,wxT("PTT Disabled"),
+                                                wxDefaultPosition, wxDefaultSize),
+                                                0,wxEXPAND);
+ 
+@@ -411,7 +411,7 @@ void IAXFrame::SetPTT(bool state)
+         iaxc_set_audio_output(0);  // unmute output
+     }
+ 
+-    muteState->SetLabel( pttState ? "Talk" : "Mute");
++    muteState->SetLabel( pttState ? wxT("Talk") : wxT("Mute"));
+ }
+ 
+ void IAXFrame::CheckPTT()
+@@ -422,28 +422,28 @@ void IAXFrame::CheckPTT()
+     SetPTT(newState);
+ }
+ 
+-void IAXFrame::OnDTMF(wxEvent &evt)
++void IAXFrame::OnDTMF(wxCommandEvent &evt)
+ {
+     iaxc_send_dtmf(*buttonlabels[evt.m_id]);
+ }
+ 
+-void IAXFrame::OnDial(wxEvent &evt)
++void IAXFrame::OnDial(wxCommandEvent &evt)
+ {
+     theFrame->DialBySpeedDialName(SpeedDial->GetValue());
+ }
+ 
+-void IAXFrame::OnHangup(wxEvent &evt)
++void IAXFrame::OnHangup(wxCommandEvent &evt)
+ {
+     iaxc_dump_call();
+ }
+ 
+-void IAXFrame::OnQuit(wxEvent &evt)
++void IAXFrame::OnQuit(wxCommandEvent &evt)
+ {
+     Close(TRUE);
+ }
+ 
+ void IAXFrame::RegisterByName(wxString RegName) {
+-    wxConfig    *config = new wxConfig("iaxPhone");
++    wxConfig    *config = new wxConfig(wxT("iaxPhone"));
+     wxChar      KeyPath[256];
+     wxListItem  item;
+     long        index;
+@@ -451,26 +451,26 @@ void IAXFrame::RegisterByName(wxString R
+     wxStringTokenizer tok(RegName, _T(":@"));
+     char user[256], pass[256], host[256];
+ 
+-    if(strlen(RegName) == 0)
++    if(wxStrlen(RegName) == 0)
+         return;
+ 
+     if(tok.CountTokens() == 3) {
+ 
+-        strncpy( user , tok.GetNextToken().c_str(), 256);
+-        strncpy( pass , tok.GetNextToken().c_str(), 256);
+-        strncpy( host , tok.GetNextToken().c_str(), 256);
++        wxStrncpy( (wchar_t *)user , tok.GetNextToken().c_str(), 256);
++        wxStrncpy( (wchar_t *)pass , tok.GetNextToken().c_str(), 256);
++        wxStrncpy( (wchar_t *)host , tok.GetNextToken().c_str(), 256);
+     } else {
+         // Check if it's a Speed Dial
+-        wxStrcpy(KeyPath,     "/Servers/");
++        wxStrcpy(KeyPath,     wxT("/Servers/"));
+         wxStrcat(KeyPath,     RegName);
+         config->SetPath(KeyPath);
+         if(!config->Exists(KeyPath)) {
+-            theFrame->SetStatusText("Register format error");
++            theFrame->SetStatusText(wxT("Register format error"));
+             return;
+         }
+-        wxStrcpy(user, config->Read("Username", ""));
+-        wxStrcpy(pass, config->Read("Password", ""));
+-        wxStrcpy(host, config->Read("Host", ""));
++        wxStrcpy((wchar_t *)user, config->Read(wxT("Username"), wxT("")));
++        wxStrcpy((wchar_t *)pass, config->Read(wxT("Password"), wxT("")));
++        wxStrcpy((wchar_t *)host, config->Read(wxT("Host"), wxT("")));
+     }
+     iaxc_register(user, pass, host);
+ 
+@@ -490,7 +490,7 @@ void IAXFrame::RegisterByName(wxString R
+         // need to find some way to update status -- is there any
+         // server data in the "reg accepted" message??
+ 
+-        registrations->SetItem(index, 1, "----");
++        registrations->SetItem(index, 1, wxT("----"));
+ 
+         registrations->Refresh();
+         registrations->Show();
+@@ -512,7 +512,7 @@ void IAXFrame::OnPTTChange(wxCommandEven
+             iaxc_set_silence_threshold(-99);
+         }
+         iaxc_set_audio_output(0);  // unmute output
+-        muteState->SetLabel("PTT Disabled");
++        muteState->SetLabel(wxT("PTT Disabled"));
+     }
+ }
+ 
+@@ -532,25 +532,25 @@ void IAXFrame::OnSilenceChange(wxCommand
+ 
+ void IAXFrame::OnAudioDialog(wxCommandEvent& WXUNUSED(event))
+ {
+-    AudioDialog dialog(this, "Audio Properties", wxDefaultPosition, wxSize(520,220));
++    AudioDialog dialog(this, wxT("Audio Properties"), wxDefaultPosition, wxSize(520,220));
+     dialog.ShowModal();
+ }
+ 
+ void IAXFrame::OnServerDialog(wxCommandEvent& WXUNUSED(event))
+ {
+-    ServerDialog dialog(this, "Server Dialog", wxDefaultPosition, wxSize(500,260));
++    ServerDialog dialog(this, wxT("Server Dialog"), wxDefaultPosition, wxSize(500,260));
+     dialog.ShowModal();
+ }
+ 
+ void IAXFrame::OnDialDialog(wxCommandEvent& WXUNUSED(event))
+ {
+-    DialDialog dialog(this, "Dial Dialog", wxDefaultPosition, wxSize(500,240));
++    DialDialog dialog(this, wxT("Dial Dialog"), wxDefaultPosition, wxSize(500,240));
+     dialog.ShowModal();
+ }
+ 
+ int IAXFrame::HandleStatusEvent(char *msg)
+ {
+-    theFrame->SetStatusText(msg);
++    theFrame->SetStatusText(wxString::FromAscii(msg));
+     return 1;
+ }
+ 
+@@ -616,7 +616,7 @@ void IAXFrame::HandleEvent(wxCommandEven
+ 
+ void IAXFrame::DialBySpeedDialName(wxString name)
+ {
+-    wxConfig *config = new wxConfig("iaxPhone");
++    wxConfig *config = new wxConfig(wxT("iaxPhone"));
+     wxString KeyPath;
+     wxString ServerName;
+     wxString Extension;
+@@ -625,20 +625,20 @@ void IAXFrame::DialBySpeedDialName(wxStr
+     if(name.IsEmpty())
+         return;
+ 
+-    KeyPath = "/Speed Dials/" + name;
++    KeyPath = wxT("/Speed Dials/") + name;
+ 
+     if(config->Exists(KeyPath)) {
+         config->SetPath(KeyPath);
+ 
+-        ServerName = config->Read("Server",    "");
+-        Extension =  config->Read("Extension", "");
++        ServerName = config->Read(wxT("Server"),    wxT(""));
++        Extension =  config->Read(wxT("Extension"), wxT(""));
+ 
+-        KeyPath = "/Servers/" + ServerName;
++        KeyPath = wxT("/Servers/") + ServerName;
+         config->SetPath(KeyPath);
+ 
+-        Destination  = config->Read("Username", "") + ":" +
+-                       config->Read("Password", "") + "@" +
+-                       config->Read("Host", "")     + "/" + 
++        Destination  = config->Read(wxT("Username"), wxT("")) + wxT(":") +
++                       config->Read(wxT("Password"), wxT("")) + wxT("@") +
++                       config->Read(wxT("Host"), wxT(""))     + wxT("/") + 
+                        Extension;
+     } else {
+         Destination = name;
+@@ -716,7 +716,7 @@ bool IAXClient::OnCmdLineParsed(wxCmdLin
+ 
+ bool IAXClient::OnInit() 
+ { 
+-    wxConfig *config = new wxConfig("iaxPhone");
++    wxConfig *config = new wxConfig(wxT("iaxPhone"));
+ 
+     wxString str;
+     wxString reginfo;
+@@ -726,19 +726,19 @@ bool IAXClient::OnInit() 
+     if(!wxApp::OnInit())
+         return false;
+ 
+-    optNoDialPad = (config->Read("/DialPad",  1l) == 0);
+-    optNumCalls  =  config->Read("/NumCalls", 4l);
++    optNoDialPad = (config->Read(wxT("/DialPad"),  1l) == 0);
++    optNumCalls  =  config->Read(wxT("/NumCalls"), 4l);
+ 
+-    theFrame = new IAXFrame("IAXPhone", 0,0,150,220);
++    theFrame = new IAXFrame(wxT("IAXPhone"), 0,0,150,220);
+ 
+     theFrame->Show(TRUE); 
+     SetTopWindow(theFrame); 
+ 
+-    iaxc_initialize(AUDIO_INTERNAL_PA, wxGetApp().optNumCalls);
++    iaxc_initialize(wxGetApp().optNumCalls);
+    
+-    theFrame->SetAudioDeviceByName(config->Read("/Input Device", ""),
+-                                   config->Read("/Output Device", ""),
+-                                   config->Read("/Ring Device", ""));
++    theFrame->SetAudioDeviceByName(config->Read(wxT("/Input Device"), wxT("")),
++                                   config->Read(wxT("/Output Device"), wxT("")),
++                                   config->Read(wxT("/Ring Device"), wxT("")));
+ 
+     //    iaxc_set_encode_format(IAXC_FORMAT_GSM);
+     iaxc_set_silence_threshold(-99);
+@@ -748,10 +748,10 @@ bool IAXClient::OnInit() 
+ 
+     // Register from wxConfig
+ 
+-    config->SetPath("/Servers");
++    config->SetPath(wxT("/Servers"));
+     bCont = config->GetFirstGroup(str, dummy);
+     while ( bCont ) {
+-        reginfo = str + "/Auto Register";
++        reginfo = str + wxT("/Auto Register");
+         if((config->Read(reginfo, 0l) != 0)) {
+             theFrame->RegisterByName(str);
+         }
+@@ -822,7 +822,7 @@ AudioDialog::AudioDialog(wxWindow *paren
+ {
+     wxBoxSizer        *dialogSizer =  new wxBoxSizer(wxHORIZONTAL);
+     wxFlexGridSizer   *controlSizer = new wxFlexGridSizer(3,3,10,10);
+-    wxConfig          *config =       new wxConfig("iaxPhone");
++    wxConfig          *config =       new wxConfig(wxT("iaxPhone"));
+     wxString          str;
+     struct
+     iaxc_audio_device *devices;
+@@ -832,47 +832,47 @@ AudioDialog::AudioDialog(wxWindow *paren
+     long              caps;
+     wxString          devname;
+ 
+-    config->SetPath("/");
++    config->SetPath(wxT("/"));
+     
+     controlSizer->Add( 20,16);
+     controlSizer->Add(280,16);
+     controlSizer->Add(110,16);
+ 
+     /* Input Device */
+-    controlSizer->Add(new wxStaticText(this, -1, "   Input Device:  "));
++    controlSizer->Add(new wxStaticText(this, -1, wxT("   Input Device:  ")));
+     controlSizer->Add(InDevice = new wxChoice(this, ID_INDEVICE,
+                                      wxDefaultPosition, wxDefaultSize),0,wxEXPAND);
+ 
+     /* Save */
+-    controlSizer->Add(Save = new wxButton(this, ID_SAVE, "Save"));
++    controlSizer->Add(Save = new wxButton(this, ID_SAVE, wxT("Save")));
+ 
+     /* Output Device */
+-    controlSizer->Add(new wxStaticText(this, -1, "   Output Device:  "));
++    controlSizer->Add(new wxStaticText(this, -1, wxT("   Output Device:  ")));
+     controlSizer->Add(OutDevice = new wxChoice(this, ID_OUTDEVICE,
+                                       wxDefaultPosition, wxDefaultSize),0,wxEXPAND);
+ 
+     /* OK */
+-    controlSizer->Add(new wxButton(this, wxID_OK, "Set"));
++    controlSizer->Add(new wxButton(this, wxID_OK, wxT("Set")));
+ 
+     /* Ring Device */
+-    controlSizer->Add(new wxStaticText(this, -1, "   Ring Device:  "));
++    controlSizer->Add(new wxStaticText(this, -1, wxT("   Ring Device:  ")));
+     controlSizer->Add(RingDevice = new wxChoice(this, ID_RINGDEVICE,
+                                        wxDefaultPosition, wxDefaultSize),0,wxEXPAND);
+ 
+     /* CANCEL */
+-    controlSizer->Add(new wxButton(this, wxID_CANCEL, "Done"));
++    controlSizer->Add(new wxButton(this, wxID_CANCEL, wxT("Done")));
+ 
+     /* Echo Cancel */
+     controlSizer->Add( 20,16);
+     controlSizer->Add(EchoCancel = new wxCheckBox(this, ID_ECHOCANCEL, 
+-                                       " Echo Cancel"));
+-    EchoCancel->SetValue(config->Read("Echo Cancel", 0l) != 0);
++                                       wxT(" Echo Cancel")));
++    EchoCancel->SetValue(config->Read(wxT("Echo Cancel"), 0l) != 0);
+ 
+     iaxc_audio_devices_get(&devices, &nDevs, &input, &output, &ring);
+ 
+     for(i=0; i<nDevs; i++) {
+         caps =    devices->capabilities;
+-        devname = devices->name;
++        devname = wxString::FromAscii(devices->name);
+ 
+         if(caps & IAXC_AD_INPUT)
+             InDevice->Append(devname);
+@@ -904,17 +904,17 @@ AudioDialog::AudioDialog(wxWindow *paren
+ 
+ void AudioDialog::OnButton(wxCommandEvent &event)
+ {
+-    wxConfig *config = new wxConfig("iaxPhone");
++    wxConfig *config = new wxConfig(wxT("iaxPhone"));
+ 
+-    config->SetPath("/");
++    config->SetPath(wxT("/"));
+ 
+     switch(event.GetId())
+     {
+       case ID_SAVE:
+-           config->Write("Input Device",  InDevice->GetStringSelection());
+-           config->Write("Output Device", OutDevice->GetStringSelection());
+-           config->Write("Ring Device",   RingDevice->GetStringSelection());
+-           config->Write("Echo Cancel",   EchoCancel->GetValue());
++           config->Write(wxT("Input Device"),  InDevice->GetStringSelection());
++           config->Write(wxT("Output Device"), OutDevice->GetStringSelection());
++           config->Write(wxT("Ring Device"),   RingDevice->GetStringSelection());
++           config->Write(wxT("Echo Cancel"),   EchoCancel->GetValue());
+            delete config;
+            break;
+ 
+@@ -942,17 +942,17 @@ void IAXFrame::SetAudioDeviceByName(wxSt
+ 
+     for(i=0; i<nDevs; i++) {
+         if(devices->capabilities & IAXC_AD_INPUT) {
+-            if(inname.Cmp(devices->name) == 0)
++            if(inname.Cmp(wxString::FromAscii(devices->name)) == 0)
+                 input = devices->devID;
+         }
+ 
+         if(devices->capabilities & IAXC_AD_OUTPUT) {
+-            if(outname.Cmp(devices->name) == 0)
++            if(outname.Cmp(wxString::FromAscii(devices->name)) == 0)
+                 output = devices->devID;
+         }
+ 
+         if(devices->capabilities & IAXC_AD_RING) {
+-            if(ringname.Cmp(devices->name) == 0)
++            if(ringname.Cmp(wxString::FromAscii(devices->name)) == 0)
+                 ring = devices->devID;
+         }
+         devices++;
+@@ -972,7 +972,7 @@ ServerDialog::ServerDialog(wxWindow *par
+ {
+     wxBoxSizer      *dialogSizer  = new wxBoxSizer(wxHORIZONTAL);
+     wxFlexGridSizer *controlSizer = new wxFlexGridSizer(3,3,10,10);
+-    wxConfig        *config =       new wxConfig("iaxPhone");
++    wxConfig        *config =       new wxConfig(wxT("iaxPhone"));
+ 
+     wxString        str;
+     long            dummy;
+@@ -983,11 +983,11 @@ ServerDialog::ServerDialog(wxWindow *par
+     controlSizer->Add(110,16);
+ 
+     /* Servers */
+-    controlSizer->Add(new wxStaticText(this, -1, "   Server:  "));
+-    controlSizer->Add(Server = new wxComboBox(this, ID_SERVER, "", 
++    controlSizer->Add(new wxStaticText(this, -1, wxT("   Server:  ")));
++    controlSizer->Add(Server = new wxComboBox(this, ID_SERVER, wxT(""), 
+                                    wxDefaultPosition, wxDefaultSize),0,wxEXPAND);
+ 
+-    config->SetPath("/Servers");
++    config->SetPath(wxT("/Servers"));
+     bCont = config->GetFirstGroup(str, dummy);
+     while ( bCont ) {
+         Server->Append(str);
+@@ -995,35 +995,35 @@ ServerDialog::ServerDialog(wxWindow *par
+     }
+ 
+     /* Add */
+-    controlSizer->Add(Add = new wxButton(this, ID_ADD, "Add"));
++    controlSizer->Add(Add = new wxButton(this, ID_ADD, wxT("Add")));
+ 
+     /* AutoRegister */
+     controlSizer->Add( 20,16);
+-    controlSizer->Add(AutoRegister = new wxCheckBox(this, ID_AUTOREGISTER, " Auto Register"));
++    controlSizer->Add(AutoRegister = new wxCheckBox(this, ID_AUTOREGISTER, wxT(" Auto Register")));
+ 
+     /* Remove */
+-    controlSizer->Add(Remove = new wxButton(this, ID_REMOVE, "Remove"));
++    controlSizer->Add(Remove = new wxButton(this, ID_REMOVE, wxT("Remove")));
+ 
+     /* Host */
+-    controlSizer->Add(new wxStaticText(this, -1, "   Host:  "));
+-    controlSizer->Add(Host = new wxTextCtrl(this, ID_HOST, "", 
++    controlSizer->Add(new wxStaticText(this, -1, wxT("   Host:  ")));
++    controlSizer->Add(Host = new wxTextCtrl(this, ID_HOST, wxT(""), 
+                                  wxDefaultPosition, wxDefaultSize),0,wxEXPAND);
+     controlSizer->Add(110,1);
+ 
+     /* Username */
+-    controlSizer->Add(new wxStaticText(this, -1, "   Username:  "));
+-    controlSizer->Add(Username = new wxTextCtrl(this, ID_USERNAME, "", 
++    controlSizer->Add(new wxStaticText(this, -1, wxT("   Username:  ")));
++    controlSizer->Add(Username = new wxTextCtrl(this, ID_USERNAME, wxT(""), 
+                                      wxDefaultPosition, wxDefaultSize),0,wxEXPAND);
+     /* Register */
+-    controlSizer->Add(new wxButton(this, wxID_OK, "Register"));
++    controlSizer->Add(new wxButton(this, wxID_OK, wxT("Register")));
+ 
+     /* Password */
+-    controlSizer->Add(new wxStaticText(this, -1, "   Password:  "));
+-    controlSizer->Add(Password = new wxTextCtrl(this, ID_PASSWORD, "", 
++    controlSizer->Add(new wxStaticText(this, -1, wxT("   Password:  ")));
++    controlSizer->Add(Password = new wxTextCtrl(this, ID_PASSWORD, wxT(""), 
+                                      wxDefaultPosition, wxDefaultSize),0,wxEXPAND);
+ 
+     /* Done */
+-    controlSizer->Add(new wxButton(this, wxID_CANCEL, "Done"));
++    controlSizer->Add(new wxButton(this, wxID_CANCEL, wxT("Done")));
+ 
+     dialogSizer->Add(controlSizer);
+ 
+@@ -1034,22 +1034,22 @@ ServerDialog::ServerDialog(wxWindow *par
+ 
+ void ServerDialog::OnButton(wxCommandEvent &event)
+ {
+-    wxConfig *config = new wxConfig("iaxPhone");
++    wxConfig *config = new wxConfig(wxT("iaxPhone"));
+     wxString KeyPath;
+     wxString ServerVal;
+ 
+     ServerVal = Server->GetValue();
+ 
+-    KeyPath = "/Servers/" + ServerVal;
++    KeyPath = wxT("/Servers/") + ServerVal;
+     config->SetPath(KeyPath);
+ 
+     switch(event.GetId())
+     {
+       case ID_ADD:
+-           config->Write("Auto Register", AutoRegister->GetValue());
+-           config->Write("Host",          Host->GetValue());
+-           config->Write("Username",      Username->GetValue());
+-           config->Write("Password",      Password->GetValue());
++           config->Write(wxT("Auto Register"), AutoRegister->GetValue());
++           config->Write(wxT("Host"),          Host->GetValue());
++           config->Write(wxT("Username"),      Username->GetValue());
++           config->Write(wxT("Password"),      Password->GetValue());
+ 
+            if(Server->FindString(ServerVal) < 0) {
+              Server->Append(ServerVal);
+@@ -1075,18 +1075,18 @@ void ServerDialog::OnButton(wxCommandEve
+ 
+ void ServerDialog::OnComboBox(wxCommandEvent &event)
+ {
+-    wxConfig *config = new wxConfig("iaxPhone");
++    wxConfig *config = new wxConfig(wxT("iaxPhone"));
+     wxString val;
+     wxString KeyPath;
+ 
+     // Update the Host/Username/Password boxes
+-    KeyPath = "/Servers/" + Server->GetStringSelection();
++    KeyPath = wxT("/Servers/") + Server->GetStringSelection();
+     config->SetPath(KeyPath);
+ 
+-    Host->SetValue(config->Read("Host", ""));
+-    Username->SetValue(config->Read("Username", ""));
+-    Password->SetValue(config->Read("Password", ""));
+-    AutoRegister->SetValue(config->Read("Auto Register", 0l) != 0);
++    Host->SetValue(config->Read(wxT("Host"), wxT("")));
++    Username->SetValue(config->Read(wxT("Username"), wxT("")));
++    Password->SetValue(config->Read(wxT("Password"), wxT("")));
++    AutoRegister->SetValue(config->Read(wxT("Auto Register"), 0l) != 0);
+ }
+ 
+ BEGIN_EVENT_TABLE(ServerDialog, wxDialog)
+@@ -1104,7 +1104,7 @@ DialDialog::DialDialog(wxWindow *parent,
+ 
+     wxBoxSizer      *dialogSizer  = new wxBoxSizer(wxHORIZONTAL);
+     wxFlexGridSizer *controlSizer = new wxFlexGridSizer(3,3,10,10);
+-    wxConfig        *config =       new wxConfig("iaxPhone");
++    wxConfig        *config =       new wxConfig(wxT("iaxPhone"));
+ 
+     wxString        str;
+     long            dummy;
+@@ -1115,11 +1115,11 @@ DialDialog::DialDialog(wxWindow *parent,
+     controlSizer->Add( 96,16);
+ 
+     /* Speed Dial */
+-    controlSizer->Add(new wxStaticText(this, -1, "   Speed Dial:  "));
+-    controlSizer->Add(SpeedDial = new wxComboBox(this, ID_SPEEDDIAL, "", 
++    controlSizer->Add(new wxStaticText(this, -1, wxT("   Speed Dial:  ")));
++    controlSizer->Add(SpeedDial = new wxComboBox(this, ID_SPEEDDIAL, wxT(""), 
+                                       wxDefaultPosition, wxDefaultSize),0,wxEXPAND);
+ 
+-    config->SetPath("/Speed Dials");
++    config->SetPath(wxT("/Speed Dials"));
+     bCont = config->GetFirstGroup(str, dummy);
+     while ( bCont ) {
+       SpeedDial->Append(str);
+@@ -1127,14 +1127,14 @@ DialDialog::DialDialog(wxWindow *parent,
+     }
+ 
+     /* Add */
+-    controlSizer->Add(Save = new wxButton(this, ID_ADD, "Add"));
++    controlSizer->Add(Save = new wxButton(this, ID_ADD, wxT("Add")));
+ 
+     /* Server */
+-    controlSizer->Add(new wxStaticText(this, -1, "   Server:  "));
+-    controlSizer->Add(Server = new wxComboBox(this, ID_SERVER, "", 
++    controlSizer->Add(new wxStaticText(this, -1, wxT("   Server:  ")));
++    controlSizer->Add(Server = new wxComboBox(this, ID_SERVER, wxT(""), 
+                                    wxDefaultPosition, wxDefaultSize),0,wxEXPAND);
+ 
+-    config->SetPath("/Servers");
++    config->SetPath(wxT("/Servers"));
+     bCont = config->GetFirstGroup(str, dummy);
+     while ( bCont ) {
+       Server->Append(str);
+@@ -1142,19 +1142,19 @@ DialDialog::DialDialog(wxWindow *parent,
+     }
+ 
+     /* Remove */
+-    controlSizer->Add(Remove = new wxButton(this, ID_REMOVE, "Remove"));
++    controlSizer->Add(Remove = new wxButton(this, ID_REMOVE, wxT("Remove")));
+ 
+     /* Extention */
+-    controlSizer->Add(new wxStaticText(this, -1, "   Extension:  "));
+-    controlSizer->Add(Extension = new wxTextCtrl(this, ID_EXTENSION, "", 
++    controlSizer->Add(new wxStaticText(this, -1, wxT("   Extension:  ")));
++    controlSizer->Add(Extension = new wxTextCtrl(this, ID_EXTENSION, wxT(""), 
+                                       wxDefaultPosition, wxDefaultSize),0,wxEXPAND);
+     /* Dial */
+-    controlSizer->Add(new wxButton(this, ID_DIAL, "Dial"));
++    controlSizer->Add(new wxButton(this, ID_DIAL, wxT("Dial")));
+ 
+     /* Done */
+     controlSizer->Add( 20,16);
+     controlSizer->Add(280,16);
+-    controlSizer->Add(new wxButton(this, wxID_OK, "Done"));
++    controlSizer->Add(new wxButton(this, wxID_OK, wxT("Done")));
+ 
+     dialogSizer->Add(controlSizer);
+ 
+@@ -1165,34 +1165,34 @@ DialDialog::DialDialog(wxWindow *parent,
+ 
+ void DialDialog::OnComboBox(wxCommandEvent &event)
+ {
+-    wxConfig *config = new wxConfig("iaxPhone");
++    wxConfig *config = new wxConfig(wxT("iaxPhone"));
+     wxString val;
+     wxString KeyPath;
+ 
+     // Update the Server/Extension boxes
+-    KeyPath = "/Speed Dials/" + SpeedDial->GetStringSelection();
++    KeyPath = wxT("/Speed Dials/") + SpeedDial->GetStringSelection();
+     config->SetPath(KeyPath);
+ 
+-    Server->SetValue(config->Read("Server", ""));
+-    Extension->SetValue(config->Read("Extension", ""));
++    Server->SetValue(config->Read(wxT("Server"), wxT("")));
++    Extension->SetValue(config->Read(wxT("Extension"), wxT("")));
+ }
+ 
+ void DialDialog::OnButton(wxCommandEvent &event)
+ {
+-    wxConfig *config = new wxConfig("iaxPhone");
++    wxConfig *config = new wxConfig(wxT("iaxPhone"));
+     wxString KeyPath;
+     wxString SpeedDialVal;
+ 
+     SpeedDialVal = SpeedDial->GetValue();
+ 
+-    KeyPath = "/Speed Dials/" + SpeedDialVal;
++    KeyPath = wxT("/Speed Dials/") + SpeedDialVal;
+     config->SetPath(KeyPath);
+ 
+     switch(event.GetId())
+     {
+       case ID_ADD:
+-           config->Write("Server",    Server->GetValue());
+-           config->Write("Extension", Extension->GetValue());
++           config->Write(wxT("Server"),    Server->GetValue());
++           config->Write(wxT("Extension"), Extension->GetValue());
+ 
+            if(SpeedDial->FindString(SpeedDialVal) < 0) {
+              SpeedDial->Append(SpeedDialVal);
+@@ -1203,7 +1203,7 @@ void DialDialog::OnButton(wxCommandEvent
+            config->DeleteGroup(KeyPath);
+            // Remove it from the combobox, as well
+            SpeedDial->Delete(SpeedDial->FindString(SpeedDialVal));
+-           Server->SetValue("");
++           Server->SetValue(wxT(""));
+            Extension->Clear();
+            break;
+ 
+diff -up iaxclient-2.1beta3/simpleclient/iaxphone/iaxphone.h.BAD iaxclient-2.1beta3/simpleclient/iaxphone/iaxphone.h
+--- iaxclient-2.1beta3/simpleclient/iaxphone/iaxphone.h.BAD	2008-06-10 12:03:28.000000000 -0400
++++ iaxclient-2.1beta3/simpleclient/iaxphone/iaxphone.h	2008-06-10 12:53:42.000000000 -0400
+@@ -220,10 +220,10 @@ class IAXFrame : public wxFrame
+ 
+             ~IAXFrame();
+ 
+-            void OnDTMF(wxEvent &evt);
+-            void OnDial(wxEvent &evt);
+-            void OnHangup(wxEvent &evt);
+-            void OnQuit(wxEvent &evt);
++            void OnDTMF(wxCommandEvent &evt);
++            void OnDial(wxCommandEvent &evt);
++            void OnHangup(wxCommandEvent &evt);
++            void OnQuit(wxCommandEvent &evt);
+             void OnPTTChange(wxCommandEvent &evt);
+             void OnSilenceChange(wxCommandEvent &evt);
+             void OnNotify(void);
+diff -up iaxclient-2.1beta3/simpleclient/iaxcomm/frame.cc.BAD iaxclient-2.1beta3/simpleclient/iaxcomm/frame.cc
+--- iaxclient-2.1beta3/simpleclient/iaxcomm/frame.cc.BAD	2008-06-10 13:05:01.000000000 -0400
++++ iaxclient-2.1beta3/simpleclient/iaxcomm/frame.cc	2008-06-10 13:05:07.000000000 -0400
+@@ -425,7 +425,7 @@ void MyFrame::ShowDirectoryControls()
+     config->SetPath(_T("/OT"));
+     bCont = config->GetFirstGroup(OTName, dummy);
+     while ( bCont ) {
+-#if defined(__UNICODE__)
++#if defined(wxUSE_UNICODE)
+         ot = ((wxButton *)((*aPanel).FindWindow(wxXmlResource::GetXRCID(OTName))));
+ #else
+         ot = XRCCTRL(*aPanel, OTName, wxButton);

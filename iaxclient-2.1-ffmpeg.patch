@@ -1,0 +1,70 @@
+diff -urN iaxclient-2.1beta3/lib/codec_ffmpeg.c iaxclient-2.1beta3-patched/lib/codec_ffmpeg.c
+--- iaxclient-2.1beta3/lib/codec_ffmpeg.c	2008-04-08 03:05:42.000000000 +1100
++++ iaxclient-2.1beta3-patched/lib/codec_ffmpeg.c	2012-01-18 20:00:03.000000000 +1100
+@@ -23,11 +23,7 @@
+ #include "codec_ffmpeg.h"
+ #include "iaxclient_lib.h"
+ 
+-#ifdef WIN32
+ #include "libavcodec/avcodec.h"
+-#else
+-#include <ffmpeg/avcodec.h>
+-#endif
+ 
+ struct slice_header_t
+ {
+@@ -165,9 +161,12 @@
+ {
+ 	int bytes_decoded;
+ 	int got_picture;
+-
+-	bytes_decoded = avcodec_decode_video(avctx, picture, &got_picture,
+-			in, inlen);
++        AVPacket avpkt;
++        av_init_packet(&avpkt);
++        avpkt.data = (unsigned char *)in;
++        avpkt.size = inlen;
++        avpkt.flags = AV_PKT_FLAG_KEY;
++        bytes_decoded = avcodec_decode_video2(avctx, picture, &got_picture, &avpkt);
+ 
+ 	if ( bytes_decoded != inlen )
+ 	{
+@@ -309,9 +308,13 @@
+ 	{
+ 		int bytes_decoded;
+ 		int got_picture;
+-
+-		bytes_decoded = avcodec_decode_video(d->avctx, d->picture,
+-				&got_picture, (unsigned char *)in, inlen);
++		AVPacket avpkt;
++		av_init_packet(&avpkt);
++		avpkt.data = (unsigned char *)in;
++		avpkt.size = inlen;
++		avpkt.flags = AV_PKT_FLAG_KEY;
++		bytes_decoded = avcodec_decode_video2(d->avctx, d->picture,
++				&got_picture, &avpkt);
+ 
+ 		if ( bytes_decoded < 0 )
+ 		{
+@@ -524,9 +527,6 @@
+ 	e->avctx->pix_fmt = PIX_FMT_YUV420P;
+ 	e->avctx->has_b_frames = 0;
+ 
+-	e->avctx->mb_qmin = e->avctx->qmin = 10;
+-	e->avctx->mb_qmax = e->avctx->qmax = 10;
+-
+ 	e->avctx->lmin = 2 * FF_QP2LAMBDA;
+ 	e->avctx->lmax = 10 * FF_QP2LAMBDA;
+ 	e->avctx->global_quality = FF_QP2LAMBDA * 2;
+diff -urN iaxclient-2.1beta3/lib/Makefile.am iaxclient-2.1beta3-patched/lib/Makefile.am
+--- iaxclient-2.1beta3/lib/Makefile.am	2008-04-08 03:05:42.000000000 +1100
++++ iaxclient-2.1beta3-patched/lib/Makefile.am	2012-01-18 20:02:10.327191921 +1100
+@@ -97,7 +97,7 @@
+ if FFMPEG
+ SRCS += codec_ffmpeg.c codec_ffmpeg.h
+ libiaxclient_la_LIBADD += $(FFMPEG_LIBS)
+-AM_CFLAGS += $(FFMPEG_CFLAGS)
++AM_CFLAGS += $(FFMPEG_CFLAGS) -lavutil
+ endif
+ 
+ SRCS_LIBGSM=					\
