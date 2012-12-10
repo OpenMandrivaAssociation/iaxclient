@@ -45,7 +45,7 @@ BuildRequires:	gd-devel
 BuildRequires:	gsm-devel
 BuildRequires:	iax-devel
 BuildRequires:	libilbc-devel
-BuildRequires:	libspeex-devel
+BuildRequires:	pkgconfig(speex)
 BuildRequires:	portaudio-devel
 BuildRequires:	portmixer-devel
 BuildRequires:	wxgtku-devel
@@ -229,3 +229,97 @@ EOF
 %{_datadir}/iaxcomm
 %{_iconsdir}/hicolor/*/apps/iaxcomm.png
 %{_datadir}/applications/mandriva-iaxcomm.desktop
+
+
+%changelog
+* Wed Jan 18 2012 Andrey Bondrov <abondrov@mandriva.org> 2.1-0.beta3.4mdv2011.0
++ Revision: 762078
+- Update ffmpeg patch to support ffmpeg 0.9
+- Clean up BuildRequires (drop versions as they are too old anyway)
+- Rebuild against utf8 version of wxGTK2.8, update patch 2
+
+  + Oden Eriksson <oeriksson@mandriva.com>
+    - rebuild
+
+* Sat Nov 07 2009 Frederik Himpe <fhimpe@mandriva.org> 2.1-0.beta3.2mdv2010.1
++ Revision: 462638
+- Rebuild for new liboggz2
+- Fix build by forcing autoreconf run
+- Add Fedora patches
+
+  + Thierry Vignaud <tv@mandriva.org>
+    - rebuild
+
+* Sun Dec 28 2008 Adam Williamson <awilliamson@mandriva.org> 2.1-0.beta3.1mdv2009.1
++ Revision: 320249
+- buildrequires libtheora-devel
+- adjust file lists
+- protect major in file list
+- new major 1
+- add a menu entry for tkiaxphone
+- fd.o icons
+- make a little wrapper script to run tkiaxphone
+- tweak the list of clients (windows one we obviously don't want, and the
+  other disabled ones don't build)
+- now has a proper autofoo build system: use it, and drop all the manual crap
+- new devel policy
+- drop now incorrect description notes
+- br liboggz-devel and libvidcap-devel (new deps)
+- adjust dependencies to build against wx 2.8 (non-unicode - code is not
+  unicode-safe)
+- drop old unnecessary patches
+- add tkiaxphone.patch: make tkiaxphone actually work
+- add tkphone.patch: from upstream SVN, make tkphone build
+- add literal.patch: fix string literal errors
+- add ffmpeg.patch: fix headers and linking for ffmpeg
+- bunzip2 patch
+- new license policy
+- spec conditionals for beta build
+- new release 2.1 beta 3
+
+  + Oden Eriksson <oeriksson@mandriva.com>
+    - lowercase ImageMagick
+
+  + Thierry Vignaud <tv@mandriva.org>
+    - rebuild
+    - summary is not licence tag
+    - fix "foobar is blabla" summary (=> "blabla") so that it looks nice in rpmdrake
+    - drop old menu
+    - kill re-definition of %%buildroot on Pixel's request
+
+  + Pixel <pixel@mandriva.com>
+    - rpm filetriggers deprecates update_menus/update_scrollkeeper/update_mime_database/update_icon_cache/update_desktop_database/post_install_gconf_schemas
+    - do not call ldconfig in %%post/%%postun, it is now handled by filetriggers
+
+  + Olivier Blin <blino@mandriva.org>
+    - restore BuildRoot
+
+  + Pascal Terjan <pterjan@mandriva.org>
+    - Import iaxclient
+
+
+
+* Sun Sep 17 2006 Oden Eriksson <oeriksson@mandriva.com> 1.0-0.20060610.3mdv2007.0
+- fix silly typo
+
+* Sun Sep 17 2006 Oden Eriksson <oeriksson@mandriva.com> 1.0-0.20060610.2mdv2007.0
+- fix xdg menu
+
+* Sat Jun 10 2006 Stefan van der Eijk <stefan@eijk.nu> 1.0-0.20060610.1mdk
+- new SVN snapshot 20060610 (revision 571)
+- rediffed patch 1 & 2
+- BuildRequires
+
+* Mon Apr 11 2005 Oden Eriksson <oeriksson@mandrakesoft.com> 1.0-0.20050410.3mdk
+- more header files fixes
+- file pernission fixes
+
+* Mon Apr 11 2005 Oden Eriksson <oeriksson@mandrakesoft.com> 1.0-0.20050410.2mdk
+- added one forgotten header file
+
+* Mon Apr 11 2005 Oden Eriksson <oeriksson@mandrakesoft.com> 1.0-0.20050410.1mdk
+- new CVS snapshot 20050410
+- added the utils, tkiaxphone and iaxcomm sub packages
+
+* Mon Sep 13 2004 Oden Eriksson <oeriksson@mandrakesoft.com> 1.0-0.20040912.1mdk
+- initial mandrake package
