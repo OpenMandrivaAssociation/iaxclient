@@ -22,7 +22,7 @@ Version:	2.1
 Release:	%{release}
 License:	LGPLv2+
 Group:		System/Libraries
-URL:		http://iaxclient.sourceforge.net/
+URL:		https://iaxclient.sourceforge.net/
 Source0:	http://downloads.sourceforge.net/%{name}/%{distname}
 Patch0:		iaxclient-1.0-20050410-headers.diff
 # Fix header location and linkage for ffmpeg - AdamW 2008/12
@@ -115,7 +115,7 @@ EXPERIMENTAL
 %package -n	iaxcomm
 Summary:	IaxComm, a portable IAX2 protocol telephony client
 Group:		Communications
-URL:		http://iaxclient.sourceforge.net/iaxcomm/
+URL:		https://iaxclient.sourceforge.net/iaxcomm/
 Requires(post): desktop-file-utils
 Requires(postun): desktop-file-utils
 
